@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -10,9 +10,15 @@ export function verifyToken(req: Request) {
   }
 
   const token = authHeader.split(" ")[1];
-  return jwt.verify(token, JWT_SECRET) as {
+  if (!token) {
+    throw new Error("Invalid token format");
+  }
+
+  const decoded = jwt.verify(token, JWT_SECRET) as {
     userId: number;
-    role: string;
     email: string;
+    role: string;
   };
+
+  return decoded;
 }
