@@ -21,7 +21,7 @@ export default function Home() {
 
     script.onload = () => {
       window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
         callback: handleGoogleLogin,
       });
 
@@ -29,6 +29,10 @@ export default function Home() {
         document.getElementById("google-btn"),
         { theme: "outline", size: "large" }
       );
+    };
+
+    return () => {
+      document.body.removeChild(script);
     };
   }, []);
 
@@ -38,12 +42,8 @@ export default function Home() {
 
     const res = await fetch("/backend/api/auth/google", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        token: response.credential,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: response.credential }),
     });
 
     const data = await res.json();
@@ -63,9 +63,7 @@ export default function Home() {
 
     const res = await fetch("/backend/api/auth/google", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         token: googleToken,
         role,
