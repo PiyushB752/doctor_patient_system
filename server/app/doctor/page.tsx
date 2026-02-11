@@ -26,10 +26,10 @@ export default function DoctorPage() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        specialization,
+        specialization: specialization.trim(),
         experience: Number(experience),
         consultation_fee: Number(consultationFee),
-        profile_description: profileDescription,
+        profile_description: profileDescription.trim(),
       }),
     });
 
@@ -49,12 +49,15 @@ export default function DoctorPage() {
 
       <input
         placeholder="Experience (years)"
+        type="number"
         value={experience}
         onChange={(e) => setExperience(e.target.value)}
       />
 
       <input
         placeholder="Consultation Fee"
+        type="number"
+        step="0.01"
         value={consultationFee}
         onChange={(e) => setConsultationFee(e.target.value)}
       />

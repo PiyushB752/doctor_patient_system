@@ -37,9 +37,56 @@ export async function GET(req: Request) {
 
     return NextResponse.json(result.rows[0]);
   } catch (error) {
+    console.error("Doctor GET error:", error);
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
+    );
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const user = verifyToken(req);
+
+    if (user.role !== "doctor") {
+      return NextResponse.json(
+        { error: "Access denied" },
+        { status: 403 }
+      );
+    }
+
+    const {
+      specialization,
+      experience,
+      consultation_fee,
+      profile_description,
+    } = await req.json();
+
+    await pool.query(
+      `UPDATE doctors
+       SET specialization = $1,
+           experience = $2,
+           consultation_fee = $3,
+           profile_description = $4
+       WHERE user_id = $5`,
+      [
+        specialization,
+        experience,
+        consultation_fee,
+        profile_description,
+        user.userId,
+      ]
+    );
+
+    return NextResponse.json({
+      message: "Doctor profile updated successfully",
+    });
+  } catch (error) {
+    console.error("Doctor PUT error:", error);
+    return NextResponse.json(
+      { error: "Failed to update doctor profile" },
+      { status: 500 }
     );
   }
 }
