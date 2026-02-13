@@ -29,11 +29,13 @@ export async function GET(req: Request) {
 
     const availabilityResult = await pool.query(
       `SELECT
-          availability_id,
-          day_of_week,
-          start_time,
-          end_time,
-          created_at
+        availability_id,
+        day_of_week,
+        start_time,
+        end_time,
+        duration,
+        capacity,
+        created_at
        FROM doctor_availability
        WHERE doctor_id = $1
        ORDER BY day_of_week, start_time`,
@@ -61,12 +63,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const { day_of_week, start_time, end_time } = await req.json();
+    const { day_of_week, start_time, end_time, duration, capacity } = await req.json();
 
     if (
       day_of_week === undefined ||
       !start_time ||
-      !end_time
+      !end_time ||
+      !duration ||
+      !capacity
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -88,11 +92,30 @@ export async function POST(req: Request) {
 
     const doctorId = doctorResult.rows[0].doctor_id;
 
+    const duplicateCheck = await pool.query(
+      `SELECT availability_id
+       FROM doctor_availability
+       WHERE doctor_id = $1
+         AND day_of_week = $2
+         AND start_time = $3
+         AND end_time = $4
+         AND duration = $5
+         AND capacity = $6`,
+      [doctorId, day_of_week, start_time, end_time, duration, capacity]
+    );
+
+    if (duplicateCheck.rows.length > 0) {
+      return NextResponse.json(
+        { error: "Availability already exists" },
+        { status: 409 }
+      );
+    }
+
     await pool.query(
       `INSERT INTO doctor_availability
-       (doctor_id, day_of_week, start_time, end_time)
-       VALUES ($1, $2, $3, $4)`,
-      [doctorId, day_of_week, start_time, end_time]
+       (doctor_id, day_of_week, start_time, end_time, duration, capacity)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [doctorId, day_of_week, start_time, end_time, duration, capacity]
     );
 
     return NextResponse.json({

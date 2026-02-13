@@ -6,7 +6,10 @@ export default function DoctorAvailabilityPage() {
   const [dayOfWeek, setDayOfWeek] = useState("1");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("13:00");
+  const [duration, setDuration] = useState("30");
+  const [capacity, setCapacity] = useState("1");
   const [availability, setAvailability] = useState<any[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,6 +37,7 @@ export default function DoctorAvailabilityPage() {
   }
 
   async function createAvailability() {
+    setError("");
     const token = localStorage.getItem("token");
     if (!token) return;
 
@@ -47,11 +51,18 @@ export default function DoctorAvailabilityPage() {
         day_of_week: Number(dayOfWeek),
         start_time: startTime,
         end_time: endTime,
+        duration: Number(duration),
+        capacity: Number(capacity),
       }),
     });
 
     const data = await res.json();
     console.log("Create response:", data);
+
+    if (!res.ok) {
+      setError(data.error || "Failed to create availability");
+      return;
+    }
 
     fetchAvailability();
   }
@@ -59,7 +70,7 @@ export default function DoctorAvailabilityPage() {
   return (
     <main>
       <h1>Doctor Availability (Test Page)</h1>
-
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <div>
         <label>Day of Week (0–6)</label>
         <input
@@ -89,18 +100,37 @@ export default function DoctorAvailabilityPage() {
         />
       </div>
 
-      <button onClick={createAvailability}>
-        Add Availability
-      </button>
+      <div>
+        <label>Duration (minutes)</label>
+        <input
+          type="number"
+          min="5"
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label>Capacity</label>
+        <input
+          type="number"
+          min="1"
+          value={capacity}
+          onChange={(e) => setCapacity(e.target.value)}
+        />
+      </div>
+
+      <button onClick={createAvailability}>Add Availability</button>
 
       <hr />
-
       <h2>Saved Availability</h2>
 
       <ul>
         {availability.map((slot) => (
           <li key={slot.availability_id}>
-            Day {slot.day_of_week} | {slot.start_time} - {slot.end_time}
+            Day {slot.day_of_week} |{" "}
+            {slot.start_time} - {slot.end_time} |{" "}
+            {slot.duration} min | Capacity {slot.capacity}
           </li>
         ))}
       </ul>
