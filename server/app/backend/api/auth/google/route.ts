@@ -5,9 +5,7 @@ import { signToken } from "../../../lib/jwt";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const token = body?.token;
-    const role = body?.role;
+    const { token, role } = await req.json();
 
     if (!token || !role) {
       return NextResponse.json(
@@ -35,42 +33,55 @@ export async function POST(req: Request) {
     const email = payload.email;
     const name = payload.name ?? "Unknown";
 
-    const existingUserResult = await pool.query(
+    const existingUser = await pool.query(
       "SELECT * FROM users WHERE email = $1",
       [email]
     );
 
     let user;
 
-    if (existingUserResult.rows.length === 0) {
-      const insertResult = await pool.query(
-        `INSERT INTO users (email, name, role)
+    if (existingUser.rows.length === 0) {
+      const result = await pool.query(
+        `INSERT INTO users (name, email, role)
          VALUES ($1, $2, $3)
          RETURNING *`,
-        [email, name, role]
+        [name, email, role]
       );
-
-      user = insertResult.rows[0];
+      user = result.rows[0];
     } else {
-      user = existingUserResult.rows[0];
+      user = existingUser.rows[0];
     }
 
     if (user.role === "doctor") {
       const doctorCheck = await pool.query(
-        "SELECT id FROM doctors WHERE user_id = $1",
-        [user.id]
+        "SELECT doctor_id FROM doctors WHERE user_id = $1",
+        [user.user_id]
       );
 
       if (doctorCheck.rows.length === 0) {
         await pool.query(
           "INSERT INTO doctors (user_id) VALUES ($1)",
-          [user.id]
+          [user.user_id]
+        );
+      }
+    }
+
+    if (user.role === "patient") {
+      const patientCheck = await pool.query(
+        "SELECT patient_id FROM patients WHERE user_id = $1",
+        [user.user_id]
+      );
+
+      if (patientCheck.rows.length === 0) {
+        await pool.query(
+          "INSERT INTO patients (user_id) VALUES ($1)",
+          [user.user_id]
         );
       }
     }
 
     const jwtToken = signToken({
-      userId: user.id,
+      userId: user.user_id,
       email: user.email,
       role: user.role,
     });
@@ -78,23 +89,15 @@ export async function POST(req: Request) {
     return NextResponse.json({
       token: jwtToken,
       user: {
-        id: user.id,
+        user_id: user.user_id,
         name: user.name,
         email: user.email,
         role: user.role,
       },
     });
-  } catch (error: any) {
-    console.error("Google Auth Error:", error);
-
+  } catch (error) {
     return NextResponse.json(
-      {
-        error: "Authentication failed",
-        details:
-          process.env.NODE_ENV === "development"
-            ? error.message
-            : undefined,
-      },
+      { error: "Authentication failed" },
       { status: 500 }
     );
   }
