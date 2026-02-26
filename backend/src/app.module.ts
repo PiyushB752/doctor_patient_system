@@ -16,20 +16,22 @@ import { Appointment } from './appointments/appointment.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [
-        User,
-        Doctor,
-        Patient,
-        DoctorAvailability,
-        Appointment
-      ],
-      synchronize: false,
-      ssl:{
-        rejectUnauthorized: false
-      }
+    TypeOrmModule.forRootAsync({
+      useFactory: () => ({
+        type: 'postgres',
+        url: process.env.DATABASE_URL,
+        entities: [
+          User,
+          Doctor,
+          Patient,
+          DoctorAvailability,
+          Appointment
+        ],
+        synchronize: false,
+        ssl:{
+          rejectUnauthorized: false
+        }
+      }),
     }),
     AuthModule,
     DoctorsModule,
