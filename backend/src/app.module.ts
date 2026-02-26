@@ -13,6 +13,8 @@ import { SlotsModule } from './slots/slots.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { Appointment } from './appointments/appointment.entity';
 
+console.log("ENV CHECK:", process.env.DATABASE_URL);
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
