@@ -27,6 +27,9 @@ import { Appointment } from './appointments/appointment.entity';
         Appointment
       ],
       synchronize: false,
+      ssl:{
+        rejectUnauthorized: false
+      }
     }),
     AuthModule,
     DoctorsModule,
