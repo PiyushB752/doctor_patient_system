@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Patient Onboarding</title>
+</head>
+<body>
+
+  <h2>Patient Profile Completion</h2>
+
+  <form id="patientForm">
+    <label>Gender:</label><br>
+    <select name="gender" required>
+      <option value="">Select</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+    <br><br>
+
+    <label>Date of Birth:</label><br>
+    <input type="date" name="date_of_birth" required>
+    <br><br>
+
+    <button type="submit">Save Profile</button>
+  </form>
+
+  <script>
+    const backendUrl = "http://localhost:3000";
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get("token");
+
+    if (tokenFromUrl) {
+      localStorage.setItem("token", tokenFromUrl);
+      window.history.replaceState({}, document.title, "/patient.html");
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Unauthorized! Please login.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("patientForm").onsubmit = async (e) => {
+      e.preventDefault();
+
+      const formData = Object.fromEntries(new FormData(e.target));
+
+      const response = await fetch(
+        backendUrl + "/patient/complete-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        alert("Error saving profile");
+        return;
+      }
+
+      alert("Patient Profile Completed ✅");
+      window.location.href = "index.html";
+    };
+  </script>
+
+</body>
+</html>

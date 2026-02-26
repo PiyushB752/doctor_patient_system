@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Doctor Slots</title>
+</head>
+<body>
+
+  <h2>View Doctor Slots</h2>
+
+  <form id="slotsForm">
+    <label>Doctor ID:</label>
+    <input type="number" id="doctor_id" required /><br /><br />
+
+    <label>Date:</label>
+    <input type="date" id="date" required /><br /><br />
+
+    <button type="submit">Get Slots</button>
+  </form>
+
+  <h3>Slots:</h3>
+  <table border="1" id="slotsTable" style="margin-top:20px; display:none;">
+    <thead>
+      <tr>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Reporting Time</th>
+        <th>Remaining Capacity</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p id="message"></p>
+
+  <script>
+    document.getElementById("slotsForm").onsubmit = async function(e) {
+      e.preventDefault();
+
+      const doctorId = document.getElementById("doctor_id").value;
+      const date = document.getElementById("date").value;
+
+      const message = document.getElementById("message");
+      const table = document.getElementById("slotsTable");
+      const tbody = table.querySelector("tbody");
+
+      message.innerText = "";
+      tbody.innerHTML = "";
+      table.style.display = "none";
+
+      try {
+        const response = await fetch(
+          `http://localhost:3000/slots?doctor_id=${doctorId}&date=${date}`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Error fetching slots");
+        }
+
+        if (result.length === 0) {
+          message.innerText = "No slots available.";
+          return;
+        }
+
+        result.forEach(slot => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${slot.start_time}</td>
+            <td>${slot.end_time}</td>
+            <td>${slot.reporting_time}</td>
+            <td>${slot.remaining_capacity}</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+
+        table.style.display = "table";
+
+      } catch (error) {
+        message.innerText = "❌ " + error.message;
+      }
+    };
+  </script>
+
+</body>
+</html>
