@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Patient System</title>
+</head>
+<body>
+
+  <h2>Doctor Patient System</h2>
+
+  <button onclick="loginAsDoctor()">Login as Doctor</button>
+  <button onclick="loginAsPatient()">Login as Patient</button>
+  <br><br>
+
+  <button onclick="getProfile()">Get Profile</button>
+  <button onclick="logout()">Logout</button>
+
+  <h3>Response:</h3>
+  <pre id="output"></pre>
+
+  <script>
+    const backendUrl = "http://localhost:3000";
+
+    function loginAsDoctor() {
+      window.location.href =
+        backendUrl + "/auth/google?role=doctor";
+    }
+
+    function loginAsPatient() {
+      window.location.href =
+        backendUrl + "/auth/google?role=patient";
+    }
+
+    function getProfile() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("Please login first!");
+        return;
+      }
+
+      fetch(backendUrl + "/auth/profile", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+        .then(res => {
+          if (!res.ok) {
+            throw new Error("Unauthorized");
+          }
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById("output").textContent =
+            JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById("output").textContent =
+            "Error: " + err.message;
+        });
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      document.getElementById("output").textContent = "";
+      alert("Logged out");
+    }
+
+    // Capture token from redirect
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (token) {
+        localStorage.setItem("token", token);
+        window.history.replaceState({}, document.title, "/");
+        alert("Login successful!");
+      }
+    };
+  </script>
+
+</body>
+</html>

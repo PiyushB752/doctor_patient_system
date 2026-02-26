@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Appointment Booking Test</title>
+</head>
+<body>
+
+  <h2>Check Slots</h2>
+
+  <label>Doctor ID:</label>
+  <input type="number" id="doctorId" />
+  <br><br>
+
+  <label>Date:</label>
+  <input type="date" id="date" />
+  <br><br>
+
+  <button onclick="loadSlots()">Load Slots</button>
+
+  <h3>Available Slots</h3>
+  <table border="1" id="slotsTable">
+    <thead>
+      <tr>
+        <th>Start</th>
+        <th>End</th>
+        <th>Reporting Time</th>
+        <th>Remaining Capacity</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+
+    async function loadSlots() {
+      const doctorId = document.getElementById("doctorId").value;
+      const date = document.getElementById("date").value;
+
+      const response = await fetch(
+        `${API_BASE}/slots?doctor_id=${doctorId}&date=${date}`
+      );
+
+      const data = await response.json();
+
+      const tbody = document.querySelector("#slotsTable tbody");
+      tbody.innerHTML = "";
+
+      data.forEach(slot => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${slot.start_time}</td>
+          <td>${slot.end_time}</td>
+          <td>${slot.reporting_time}</td>
+          <td>${slot.remaining_capacity}</td>
+          <td>
+            <button onclick="bookSlot('${slot.start_time}')">
+              Book
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+    }
+
+    async function bookSlot(slotStartTime) {
+      const doctorId = document.getElementById("doctorId").value;
+      const date = document.getElementById("date").value;
+
+      const patientId = prompt("Enter Patient ID:");
+
+      if (!patientId) return;
+
+      const response = await fetch(`${API_BASE}/appointments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          doctor_id: Number(doctorId),
+          patient_id: Number(patientId),
+          appointment_date: date,
+          slot_start_time: slotStartTime
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Appointment Booked Successfully!");
+        loadSlots(); // reload slots after booking
+      } else {
+        alert(result.message || "Booking Failed");
+      }
+    }
+  </script>
+
+</body>
+</html>
