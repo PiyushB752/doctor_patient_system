@@ -30,7 +30,7 @@ console.log("ENV CHECK:", process.env.DATABASE_URL);
           DoctorAvailability,
           Appointment
         ],
-        synchronize: false,
+        synchronize: true,
         ssl:{
           rejectUnauthorized: false
         }
