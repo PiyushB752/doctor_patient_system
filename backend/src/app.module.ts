@@ -22,6 +22,7 @@ console.log("ENV CHECK:", process.env.DATABASE_URL);
       useFactory: () => ({
         type: 'postgres',
         url: process.env.DATABASE_URL,
+        autoLoadEntities: true,
         entities: [
           User,
           Doctor,
