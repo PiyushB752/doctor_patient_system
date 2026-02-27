@@ -1,71 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Doctor Onboarding</title>
+    <title>Doctor Dashboard</title>
 </head>
 <body>
+    <h2>Doctor Complete Profile</h2>
 
-  <h2>Doctor Profile Completion</h2>
+    <input type="text" id="specialization" placeholder="Specialization">
+    <button onclick="completeProfile()">Submit</button>
 
-  <form id="doctorForm">
-    <label>Specialization:</label><br>
-    <input name="specialization" required><br><br>
+    <script>
+        const API_BASE = "https://doctorpatientsystem-production-75a3.up.railway.app";
 
-    <label>Experience (years):</label><br>
-    <input type="number" name="experience" required><br><br>
+        async function completeProfile() {
+            const token = localStorage.getItem("token");
 
-    <label>Consultation Fee:</label><br>
-    <input type="number" name="consultation_fee" required><br><br>
+            const res = await fetch(API_BASE + "/doctor/complete-profile", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    specialization: document.getElementById("specialization").value
+                })
+            });
 
-    <label>Profile Description:</label><br>
-    <textarea name="profile_description"></textarea><br><br>
-
-    <button type="submit">Save Profile</button>
-  </form>
-
-  <script>
-    const backendUrl = "http://localhost:3000";
-    const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get("token");
-
-    if (tokenFromUrl) {
-      localStorage.setItem("token", tokenFromUrl);
-      window.history.replaceState({}, document.title, "/doctor.html");
-    }
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Unauthorized! Please login.");
-      window.location.href = "index.html";
-    }
-
-    document.getElementById("doctorForm").onsubmit = async (e) => {
-      e.preventDefault();
-
-      const formData = Object.fromEntries(new FormData(e.target));
-
-      const response = await fetch(
-        backendUrl + "/doctor/complete-profile",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
-          },
-          body: JSON.stringify(formData),
+            const data = await res.json();
+            alert(JSON.stringify(data));
         }
-      );
-
-      if (!response.ok) {
-        alert("Error saving profile");
-        return;
-      }
-
-      alert("Doctor Profile Completed ✅");
-      window.location.href = "index.html";
-    };
-  </script>
-
+    </script>
 </body>
 </html>

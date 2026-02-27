@@ -37,7 +37,7 @@
 <div id="appointments"></div>
 
 <script>
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://doctorpatientsystem-production-75a3.up.railway.app";
 
 let isRescheduleMode = false;
 let rescheduleAppointmentId = null;
@@ -97,7 +97,7 @@ async function bookAppointment(time) {
 
   const res = await fetch(`${API_BASE}/appointments`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer" + localStorage.getItem("token") },
     body: JSON.stringify({
       doctor_id: Number(doctorId),
       patient_id: Number(patientId),
@@ -187,7 +187,7 @@ async function confirmReschedule(time) {
     `${API_BASE}/appointments/${rescheduleAppointmentId}/reschedule`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json","Authorization": "Bearer " + localStorage.getItem("token") },
       body: JSON.stringify({
         appointment_date: date,
         appointment_time: time
@@ -214,7 +214,9 @@ async function confirmReschedule(time) {
 async function cancelAppointment(id) {
   const res = await fetch(
     `${API_BASE}/appointments/${id}/cancel`,
-    { method: "PATCH" }
+    { method: "PATCH",
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+     }
   );
 
   const data = await res.json();

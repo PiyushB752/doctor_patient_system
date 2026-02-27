@@ -11,7 +11,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: config.get<string>('GOOGLE_CLIENT_SECRET')!,
       callbackURL:
         config.get<string>('GOOGLE_CALLBACK_URL') ??
-        'http://localhost:3000/auth/google/callback',
+        'https://doctorpatientsystem-production-75a3.up.railway.app/auth/google/callback/auth/google/callback',
       scope: ['email', 'profile'],
       passReqToCallback: true,
     } as StrategyOptionsWithRequest);

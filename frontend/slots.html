@@ -49,7 +49,7 @@
 
       try {
         const response = await fetch(
-          `http://localhost:3000/slots?doctor_id=${doctorId}&date=${date}`
+          `https://doctorpatientsystem-production-75a3.up.railway.app/slots?doctor_id=${doctorId}&date=${date}`
         );
 
         const result = await response.json();

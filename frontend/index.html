@@ -1,82 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Doctor Patient System</title>
+    <title>Doctor Patient System</title>
 </head>
 <body>
+    <h1>Doctor Patient System</h1>
 
-  <h2>Doctor Patient System</h2>
+    <button onclick="login('doctor')">Login as Doctor</button>
+    <button onclick="login('patient')">Login as Patient</button>
 
-  <button onclick="loginAsDoctor()">Login as Doctor</button>
-  <button onclick="loginAsPatient()">Login as Patient</button>
-  <br><br>
+    <script>
+        const backendUrl = "https://doctorpatientsystem-production-75a3.up.railway.app";
 
-  <button onclick="getProfile()">Get Profile</button>
-  <button onclick="logout()">Logout</button>
+        function login(role) {
+            window.location.href = backendUrl + "/auth/google?role=" + role;
+        }
 
-  <h3>Response:</h3>
-  <pre id="output"></pre>
+        // Save token after redirect
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
 
-  <script>
-    const backendUrl = "http://localhost:3000";
-
-    function loginAsDoctor() {
-      window.location.href =
-        backendUrl + "/auth/google?role=doctor";
-    }
-
-    function loginAsPatient() {
-      window.location.href =
-        backendUrl + "/auth/google?role=patient";
-    }
-
-    function getProfile() {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        alert("Please login first!");
-        return;
-      }
-
-      fetch(backendUrl + "/auth/profile", {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      })
-        .then(res => {
-          if (!res.ok) {
-            throw new Error("Unauthorized");
-          }
-          return res.json();
-        })
-        .then(data => {
-          document.getElementById("output").textContent =
-            JSON.stringify(data, null, 2);
-        })
-        .catch(err => {
-          document.getElementById("output").textContent =
-            "Error: " + err.message;
-        });
-    }
-
-    function logout() {
-      localStorage.removeItem("token");
-      document.getElementById("output").textContent = "";
-      alert("Logged out");
-    }
-
-    // Capture token from redirect
-    window.onload = function () {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get("token");
-
-      if (token) {
-        localStorage.setItem("token", token);
-        window.history.replaceState({}, document.title, "/");
-        alert("Login successful!");
-      }
-    };
-  </script>
-
+        if (token) {
+            localStorage.setItem("token", token);
+            alert("Login successful!");
+            window.location.href = "doctor.html";
+        }
+    </script>
 </body>
 </html>
